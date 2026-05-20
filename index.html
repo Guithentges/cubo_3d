@@ -24,7 +24,6 @@
 <script>
 
 //Cena
-
 const scene = new THREE.Scene();
 
 scene.background = new THREE.Color(0x111111);
@@ -40,7 +39,6 @@ camera.position.set(7, 7, 7);
 
 
 //Renderizador
-
 const renderer = new THREE.WebGLRenderer({
   antialias: true
 });
@@ -54,7 +52,6 @@ document.body.appendChild(renderer.domElement);
 
 
 //Controles
-
 const controls = new THREE.OrbitControls(
   camera,
   renderer.domElement
@@ -69,6 +66,52 @@ const light = new THREE.AmbientLight(
 
 scene.add(light);
 
+//Função Cubinho
+function criarCubo() {
+
+  const materiais = [
+
+    new THREE.MeshBasicMaterial({
+      color: "#FFFFFF"
+    }),
+
+    new THREE.MeshBasicMaterial({
+      color: "#FFD700"
+    }),
+
+    new THREE.MeshBasicMaterial({
+      color: "#0045AD"
+    }),
+
+    new THREE.MeshBasicMaterial({
+      color: "#009E0F"
+    }),
+
+    new THREE.MeshBasicMaterial({
+      color: "#FF0000"
+    }),
+
+    new THREE.MeshBasicMaterial({
+      color: "#FF5500"
+    })
+
+  ];
+
+  const geometry = new THREE.BoxGeometry(
+    0.95,
+    0.95,
+    0.95
+  );
+
+  return new THREE.Mesh(
+    geometry,
+    materiais
+  );
+}
+
+const cuboTeste = criarCubo();
+
+scene.add(cuboTeste);
 
 //Animação
 
