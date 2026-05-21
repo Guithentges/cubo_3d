@@ -129,6 +129,104 @@ for (let x = -1; x <= 1; x++) {
   }
 }
 
+//Grupo de Rotação
+const grupoRotacao = new THREE.Group();
+
+scene.add(grupoRotacao);
+
+
+//Controle
+let animando = false;
+
+let anguloAtual = 0;
+
+//Preparar Rotação
+function prepararRotacaoSuperior() {
+
+  cubinhos.forEach(cube => {
+
+    if (cube.position.y > 0.5) {
+
+      grupoRotacao.add(cube);
+    }
+  });
+}
+
+//Girar Face
+function girarFaceSuperior() {
+
+  if (animando) return;
+
+  animando = true;
+
+  anguloAtual = 0;
+
+  prepararRotacaoSuperior();
+}
+
+//Finalizar Rotação
+function finalizarRotacao() {
+
+  // Força exatamente 90 graus
+  grupoRotacao.rotation.y =
+    Math.PI / 2;
+
+  grupoRotacao.updateMatrixWorld();
+
+  while (grupoRotacao.children.length > 0) {
+
+    const cubo = grupoRotacao.children[0];
+
+    // Aplica transformação final
+    cubo.applyMatrix4(
+      grupoRotacao.matrixWorld
+    );
+
+    // Remove do grupo
+    grupoRotacao.remove(cubo);
+
+    // Corrige posição
+    cubo.position.x =
+      Math.round(cubo.position.x);
+
+    cubo.position.y =
+      Math.round(cubo.position.y);
+
+    cubo.position.z =
+      Math.round(cubo.position.z);
+
+    // Corrige rotação
+    cubo.rotation.x =
+      Math.round(cubo.rotation.x / (Math.PI / 2))
+      * (Math.PI / 2);
+
+    cubo.rotation.y =
+      Math.round(cubo.rotation.y / (Math.PI / 2))
+      * (Math.PI / 2);
+
+    cubo.rotation.z =
+      Math.round(cubo.rotation.z / (Math.PI / 2))
+      * (Math.PI / 2);
+
+    // Volta pra cena
+    scene.add(cubo);
+  }
+
+  // Reseta grupo
+  grupoRotacao.rotation.set(0, 0, 0);
+}
+
+//Teclado
+
+document.addEventListener("keydown", (e) => {
+
+  if (e.key === "u") {
+
+    girarFaceSuperior();
+  }
+});
+
+
 //Animação
 
 function animate() {
@@ -136,6 +234,20 @@ function animate() {
   requestAnimationFrame(animate);
 
   controls.update();
+
+  if (animando) {
+
+    grupoRotacao.rotation.y += 0.02;
+
+    anguloAtual += 0.02;
+
+    if (anguloAtual >= Math.PI / 2) {
+
+      animando = false;
+
+      finalizarRotacao();
+    }
+  }
 
   renderer.render(scene, camera);
 }
