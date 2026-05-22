@@ -66,6 +66,7 @@ const light = new THREE.AmbientLight(
 
 scene.add(light);
 
+
 //Função Cubinho
 function criarCubo() {
 
@@ -109,6 +110,7 @@ function criarCubo() {
   );
 }
 
+
 //Criar 27 Cubos
 const cubinhos = [];
 
@@ -129,6 +131,7 @@ for (let x = -1; x <= 1; x++) {
   }
 }
 
+
 //Grupo de Rotação
 const grupoRotacao = new THREE.Group();
 
@@ -139,6 +142,9 @@ scene.add(grupoRotacao);
 let animando = false;
 
 let anguloAtual = 0;
+
+let eixoAtual = "y";
+
 
 //Preparar Rotação
 function prepararRotacaoSuperior() {
@@ -152,6 +158,20 @@ function prepararRotacaoSuperior() {
   });
 }
 
+
+//Preparar Rotação Frontal
+function prepararRotacaoFrontal() {
+
+  cubinhos.forEach(cube => {
+
+    if (cube.position.z > 0.5) {
+
+      grupoRotacao.add(cube);
+    }
+  });
+}
+
+
 //Girar Face
 function girarFaceSuperior() {
 
@@ -161,15 +181,41 @@ function girarFaceSuperior() {
 
   anguloAtual = 0;
 
+  eixoAtual = "y";
+
   prepararRotacaoSuperior();
 }
+
+
+//Girar Face Frontal
+function girarFaceFrontal() {
+
+  if (animando) return;
+
+  animando = true;
+
+  anguloAtual = 0;
+
+  eixoAtual = "z";
+
+  prepararRotacaoFrontal();
+}
+
 
 //Finalizar Rotação
 function finalizarRotacao() {
 
-  // Força exatamente 90 graus
-  grupoRotacao.rotation.y =
-    Math.PI / 2;
+  if (eixoAtual === "y") {
+
+    grupoRotacao.rotation.y =
+      Math.PI / 2;
+  }
+
+  if (eixoAtual === "z") {
+
+    grupoRotacao.rotation.z =
+      Math.PI / 2;
+  }
 
   grupoRotacao.updateMatrixWorld();
 
@@ -216,19 +262,40 @@ function finalizarRotacao() {
   grupoRotacao.rotation.set(0, 0, 0);
 }
 
-//Teclado
 
+//Teclado
 document.addEventListener("keydown", (e) => {
 
-  if (e.key === "u") {
+  //Face Superior
+  if (e.key === "s") {
 
     girarFaceSuperior();
+  }
+
+  //Face Frontal
+  if (e.key === "f") {
+
+    girarFaceFrontal();
   }
 });
 
 
-//Animação
+//Resize
+window.addEventListener("resize", () => {
 
+  camera.aspect =
+    window.innerWidth / window.innerHeight;
+
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+  );
+});
+
+
+//Animação
 function animate() {
 
   requestAnimationFrame(animate);
@@ -237,7 +304,15 @@ function animate() {
 
   if (animando) {
 
-    grupoRotacao.rotation.y += 0.02;
+    if (eixoAtual === "y") {
+
+      grupoRotacao.rotation.y += 0.02;
+    }
+
+    if (eixoAtual === "z") {
+
+      grupoRotacao.rotation.z += 0.02;
+    }
 
     anguloAtual += 0.02;
 
