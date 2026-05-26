@@ -145,8 +145,10 @@ let anguloAtual = 0;
 
 let eixoAtual = "y";
 
+let camadaAtual = 1;
 
-//Preparar Rotação
+
+//Preparar Rotação Superior
 function prepararRotacaoSuperior() {
 
   cubinhos.forEach(cube => {
@@ -172,7 +174,20 @@ function prepararRotacaoFrontal() {
 }
 
 
-//Girar Face
+//Nova função genérica
+function prepararRotacao(eixo, camada) {
+
+  cubinhos.forEach(cube => {
+
+    if (Math.round(cube.position[eixo]) === camada) {
+
+      grupoRotacao.add(cube);
+    }
+  });
+}
+
+
+//Girar Face Superior
 function girarFaceSuperior() {
 
   if (animando) return;
@@ -202,20 +217,28 @@ function girarFaceFrontal() {
 }
 
 
+//Nova função genérica
+function girarFace(eixo, camada) {
+
+  if (animando) return;
+
+  animando = true;
+
+  anguloAtual = 0;
+
+  eixoAtual = eixo;
+
+  camadaAtual = camada;
+
+  prepararRotacao(eixo, camada);
+}
+
+
 //Finalizar Rotação
 function finalizarRotacao() {
 
-  if (eixoAtual === "y") {
-
-    grupoRotacao.rotation.y =
-      Math.PI / 2;
-  }
-
-  if (eixoAtual === "z") {
-
-    grupoRotacao.rotation.z =
-      Math.PI / 2;
-  }
+  grupoRotacao.rotation[eixoAtual] =
+    Math.PI / 2;
 
   grupoRotacao.updateMatrixWorld();
 
@@ -223,15 +246,12 @@ function finalizarRotacao() {
 
     const cubo = grupoRotacao.children[0];
 
-    // Aplica transformação final
     cubo.applyMatrix4(
       grupoRotacao.matrixWorld
     );
 
-    // Remove do grupo
     grupoRotacao.remove(cubo);
 
-    // Corrige posição
     cubo.position.x =
       Math.round(cubo.position.x);
 
@@ -241,7 +261,6 @@ function finalizarRotacao() {
     cubo.position.z =
       Math.round(cubo.position.z);
 
-    // Corrige rotação
     cubo.rotation.x =
       Math.round(cubo.rotation.x / (Math.PI / 2))
       * (Math.PI / 2);
@@ -254,11 +273,9 @@ function finalizarRotacao() {
       Math.round(cubo.rotation.z / (Math.PI / 2))
       * (Math.PI / 2);
 
-    // Volta pra cena
     scene.add(cubo);
   }
 
-  // Reseta grupo
   grupoRotacao.rotation.set(0, 0, 0);
 }
 
@@ -266,16 +283,31 @@ function finalizarRotacao() {
 //Teclado
 document.addEventListener("keydown", (e) => {
 
-  //Face Superior
-  if (e.key === "s") {
+  switch (e.key.toLowerCase()) {
 
-    girarFaceSuperior();
-  }
+    case "s":
+      girarFace("y", 1);
+      break;
 
-  //Face Frontal
-  if (e.key === "f") {
+    case "i":
+      girarFace("y", -1);
+      break;
 
-    girarFaceFrontal();
+    case "f":
+      girarFace("z", 1);
+      break;
+
+    case "t":
+      girarFace("z", -1);
+      break;
+
+    case "e":
+      girarFace("x", 1);
+      break;
+
+    case "d":
+      girarFace("x", -1);
+      break;
   }
 });
 
@@ -304,15 +336,7 @@ function animate() {
 
   if (animando) {
 
-    if (eixoAtual === "y") {
-
-      grupoRotacao.rotation.y += 0.02;
-    }
-
-    if (eixoAtual === "z") {
-
-      grupoRotacao.rotation.z += 0.02;
-    }
+    grupoRotacao.rotation[eixoAtual] += 0.02;
 
     anguloAtual += 0.02;
 
