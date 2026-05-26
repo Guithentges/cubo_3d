@@ -15,6 +15,151 @@
   </style>
 </head>
 
+  <div id="controlesCubo">
+
+  <button id="btnS">Superior (S)</button>
+  <button id="btnI">Inferior (I)</button>
+
+  <button id="btnF">Frontal (F)</button>
+  <button id="btnT">Traseira (T)</button>
+
+  <button id="btnE">Esquerda (E)</button>
+  <button id="btnD">Direita (D)</button>
+
+  </div>
+
+  <button id="embaralhar">Embaralhar</button>
+
+  <div id="contador">
+    Movimentos: 0
+  </div>
+
+  <div id="mensagemEmbaralhando">
+    EMBARALHANDO...
+  </div>
+
+  <div id="vitoria">
+    CUBO RESOLVIDO!
+  </div>
+
+  <style>
+
+    #controlesCubo {
+
+    position: absolute;
+
+    bottom: 20px;
+    left: 20px;
+
+    display: flex;
+    gap: 10px;
+
+    z-index: 1000;
+  }
+
+  #controlesCubo button {
+
+    width: 200px;
+    height: 50px;
+
+    font-size: 20px;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    border: none;
+    border-radius: 8px;
+
+    background: white;
+  }
+
+  #controlesCubo button:hover {
+
+    transform: scale(1.05);
+  }
+
+  #embaralhar {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.5s ease;
+  }
+  #embaralhar:hover {
+    background-color: #555;
+    color: white;
+    transition: all 0.5s ease;
+  }
+
+  #contador {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+
+  color: white;
+  font-size: 24px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  }
+
+  #mensagemEmbaralhando {
+  position: absolute;
+  top: 70px;
+  left: 20px;
+
+  color: white;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+
+  display: none;
+
+  animation: piscar 2s infinite;
+  }
+
+  #vitoria {
+
+  display: none;
+
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  color: #00ff00;
+
+  font-size: 48px;
+
+  font-weight: bold;
+
+  font-family: Arial;
+
+  text-shadow:
+    0 0 10px #00ff00,
+    0 0 20px #00ff00;
+}
+
+  @keyframes piscar {
+
+    0% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+  </style>
 <body>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -37,6 +182,12 @@ const camera = new THREE.PerspectiveCamera(
 
 camera.position.set(7, 7, 7);
 
+function atualizarContador() {
+
+  document.getElementById("contador")
+    .textContent =
+    `Movimentos: ${movimentos}`;
+}
 
 //Renderizador
 const renderer = new THREE.WebGLRenderer({
@@ -66,6 +217,35 @@ const light = new THREE.AmbientLight(
 
 scene.add(light);
 
+document.getElementById("btnS")
+.addEventListener("click", () => {
+  girarFace("y", 1);
+});
+
+document.getElementById("btnI")
+.addEventListener("click", () => {
+  girarFace("y", -1);
+});
+
+document.getElementById("btnF")
+.addEventListener("click", () => {
+  girarFace("z", 1);
+});
+
+document.getElementById("btnT")
+.addEventListener("click", () => {
+  girarFace("z", -1);
+});
+
+document.getElementById("btnE")
+.addEventListener("click", () => {
+  girarFace("x", 1);
+});
+
+document.getElementById("btnD")
+.addEventListener("click", () => {
+  girarFace("x", -1);
+});
 
 //Função Cubinho
 function criarCubo() {
@@ -131,6 +311,35 @@ for (let x = -1; x <= 1; x++) {
   }
 }
 
+const estadoResolvido =
+JSON.stringify(
+  cubinhos.map(cubo => ({
+    x: cubo.position.x,
+    y: cubo.position.y,
+    z: cubo.position.z,
+    rx: cubo.rotation.x,
+    ry: cubo.rotation.y,
+    rz: cubo.rotation.z
+  }))
+);
+
+function verificarVitoria() {
+
+  const estadoAtual =
+  JSON.stringify(
+    cubinhos.map(cubo => ({
+      x: cubo.position.x,
+      y: cubo.position.y,
+      z: cubo.position.z,
+      rx: cubo.rotation.x,
+      ry: cubo.rotation.y,
+      rz: cubo.rotation.z
+    }))
+  );
+
+  return estadoAtual === estadoResolvido;
+}
+
 
 //Grupo de Rotação
 const grupoRotacao = new THREE.Group();
@@ -146,6 +355,10 @@ let anguloAtual = 0;
 let eixoAtual = "y";
 
 let camadaAtual = 1;
+
+let movimentos = 0;
+
+let embaralhando = false;
 
 
 //Preparar Rotação Superior
@@ -230,6 +443,13 @@ function girarFace(eixo, camada) {
 
   camadaAtual = camada;
 
+  if (!embaralhando) {
+
+  movimentos++;
+
+  atualizarContador();
+  }
+
   prepararRotacao(eixo, camada);
 }
 
@@ -275,10 +495,78 @@ function finalizarRotacao() {
 
     scene.add(cubo);
   }
+  if (!embaralhando && verificarVitoria()) {
+    document.getElementById("vitoria")
+      .style.display = "block";
+  } else {
+    document.getElementById("vitoria")
+      .style.display = "none";
+  }
 
   grupoRotacao.rotation.set(0, 0, 0);
 }
 
+function embaralhar() {
+
+  embaralhando = true;
+
+  document.getElementById("vitoria")
+  .style.display = "none";
+
+  const mensagem =
+    document.getElementById(
+      "mensagemEmbaralhando"
+    );
+
+  mensagem.style.display = "block";
+
+  const movimentos = [
+
+    () => girarFace("y", 1),
+    () => girarFace("y", -1),
+
+    () => girarFace("z", 1),
+    () => girarFace("z", -1),
+
+    () => girarFace("x", 1),
+    () => girarFace("x", -1)
+
+  ];
+
+  let contador = 0;
+
+  const intervalo = setInterval(() => {
+
+    if (contador >= 15) {
+
+      embaralhando = false;
+      clearInterval(intervalo);
+      mensagem.style.display = "none";
+
+      return;
+    }
+
+    if (!animando) {
+
+      const movimento =
+        movimentos[
+          Math.floor(
+            Math.random() *
+            movimentos.length
+          )
+        ];
+
+      movimento();
+
+      contador++;
+    }
+
+  }, 600);
+}
+
+document
+  .getElementById("embaralhar")
+  .addEventListener("click", embaralhar);
 
 //Teclado
 document.addEventListener("keydown", (e) => {
